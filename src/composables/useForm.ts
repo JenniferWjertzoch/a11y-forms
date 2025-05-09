@@ -17,17 +17,17 @@ export function useForm() {
 
   async function validate(): Promise<boolean> {
     const results = await Promise.all(
-        Object.entries(fields.value).map(async ([name, validateFn]) => {
-          const isValid = await validateFn()
-          errors.value[name] = isValid ? null : 'Fehler im Feld'
-          return isValid
-        })
+      Object.entries(fields.value).map(async ([name, validateFn]) => {
+        const isValid = await validateFn()
+        errors.value[name] = isValid ? null : 'Fehler im Feld'
+        return isValid
+      })
     )
     return results.every(Boolean)
   }
 
   function reset() {
-    Object.keys(errors.value).forEach(key => {
+    Object.keys(errors.value).forEach((key) => {
       errors.value[key] = null
     })
     forceShowErrors.value = false

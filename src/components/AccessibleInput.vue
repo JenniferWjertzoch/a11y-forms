@@ -7,80 +7,73 @@
 </template>
 
 <script setup lang="ts">
-  import { watch, onMounted, onUnmounted, inject } from 'vue'
-  import { useA11yInput } from '@/composables/useA11yInput'
-  import type { AnySchema } from 'valibot'
+import { watch, onMounted, onUnmounted, inject } from 'vue'
+import { useA11yInput } from '@/composables/useA11yInput'
+import type { AnySchema } from 'valibot'
 
-  interface FormContext {
-    registerField: (name: string, validateFn: () => Promise<boolean>) => void
-    unregisterField: (name: string) => void
+interface FormContext {
+  registerField: (name: string, validateFn: () => Promise<boolean>) => void
+  unregisterField: (name: string) => void
+}
+
+const props = defineProps<{
+  modelValue: string
+  label: string
+  name: string
+  required?: boolean
+  disabled?: boolean
+  placeholder?: string
+  schema?: AnySchema
+}>()
+
+const emit = defineEmits<{
+  (e: 'update:modelValue', value: string): void
+}>()
+
+const { value, inputProps, labelProps, errorMessageProps, error, validate } = useA11yInput({
+  modelValue: props.modelValue,
+  label: props.label,
+  name: props.name,
+  required: props.required,
+  disabled: props.disabled,
+  placeholder: props.placeholder,
+  schema: props.schema,
+})
+
+const formContext = inject<FormContext | null>('formContext', null)
+
+onMounted(() => {
+  if (formContext) {
+    formContext.registerField(props.name, validate)
   }
+})
 
-  const props = defineProps<{
-    modelValue: string
-    label: string
-    name: string
-    required?: boolean
-    disabled?: boolean
-    placeholder?: string
-    schema?: AnySchema
-  }>()
+onUnmounted(() => {
+  if (formContext) {
+    formContext.unregisterField(props.name)
+  }
+})
 
-  const emit = defineEmits<{
-    (e: 'update:modelValue', value: string): void
-  }>()
+watch(value, (newVal) => {
+  emit('update:modelValue', newVal)
+})
 
-  const {
-    value,
-    inputProps,
-    labelProps,
-    errorMessageProps,
-    error,
-    validate,
-  } = useA11yInput({
-    modelValue: props.modelValue,
-    label: props.label,
-    name: props.name,
-    required: props.required,
-    disabled: props.disabled,
-    placeholder: props.placeholder,
-    schema: props.schema,
-  })
-
-  const formContext = inject<FormContext | null>('formContext', null)
-
-  onMounted(() => {
-    if (formContext) {
-      formContext.registerField(props.name, validate)
-    }
-  })
-
-  onUnmounted(() => {
-    if (formContext) {
-      formContext.unregisterField(props.name)
-    }
-  })
-
-  watch(value, newVal => {
-    emit('update:modelValue', newVal)
-  })
-
-  defineExpose({ validate })
+defineExpose({ validate })
 </script>
 
 <style scoped>
-  .a11y-input {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    margin-bottom: 1rem;
-  }
-  input[aria-invalid='true'] {
-    border: 2px solid red;
-  }
-  p[role='alert'] {
-    color: red;
-    font-size: 0.85rem;
-    margin: 0;
-  }
+.a11y-input {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 1rem;
+}
+input[aria-invalid='true'] {
+  border: 2px solid red;
+}
+p[role='alert'] {
+  color: red;
+  font-size: 0.85rem;
+  margin: 0;
+}
 </style>

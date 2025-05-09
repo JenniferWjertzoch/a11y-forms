@@ -65,6 +65,27 @@ This pattern helps me work faster, test easier, and avoid UI regressions in larg
 
 ---
 
+## Layered Architecture
+
+This project follows a layered architecture inspired by MVC principles:
+
+- **Model (State & Logic):**
+
+  - `useA11yInput.ts` – Manages input state, validation, ARIA computation.
+  - `useForm.ts` – Global form registry, lifecycle, and validation logic.
+
+- **View (UI Components):**
+
+  - `AccessibleInput.vue`, `AccessibleTextarea.vue` – Render inputs with full ARIA and error display.
+  - These are design-system-agnostic and minimal in style.
+
+- **Controller (Flow & Orchestration):**
+  - `FormProvider.vue` – Acts as the controller that registers/unregisters fields, triggers validations, and manages submit flow.
+
+This separation ensures testability, reusability, and clarity at scale. Each concern is isolated, which makes the form system suitable for microfrontends, design system integrations, and automated testing.
+
+---
+
 ## Features
 
 - **FormProvider** for scoped validation and control
@@ -104,6 +125,7 @@ src/
 ├── App.vue (example usage)
 
 ```
+
 ---
 
 ## System Design Diagram
@@ -127,11 +149,11 @@ src/
 
 ## Testing Strategy
 
-* Unit-tested using [Vitest](https://vitest.dev)
-* Mocked input events for `onInput`, `onBlur`
-* Validate ARIA attributes (`aria-invalid`, `aria-describedby`)
-* Validate async validation return values
-* Storybook stories as integration sanity tests
+- Unit-tested using [Vitest](https://vitest.dev)
+- Mocked input events for `onInput`, `onBlur`
+- Validate ARIA attributes (`aria-invalid`, `aria-describedby`)
+- Validate async validation return values
+- Storybook stories as integration sanity tests
 
 ---
 
@@ -163,11 +185,11 @@ src/
 
 ## Roadmap
 
-* [ ] Add async schema support
-* [ ] Improve screen reader announcement timing
-* [ ] Add loading + disabled states to `FormProvider`
-* [ ] CLI generator for new fields
-* [ ] Public package for npm
+- [ ] Add async schema support
+- [ ] Improve screen reader announcement timing
+- [ ] Add loading + disabled states to `FormProvider`
+- [ ] CLI generator for new fields
+- [ ] Public package for npm
 
 ---
 

@@ -27,27 +27,27 @@
 </template>
 
 <script setup lang="ts">
-  import { ref } from 'vue'
-  import AccessibleInput from './AccessibleInput.vue'
-  import AccessibleTextarea from './AccessibleTextarea.vue'
-  import FormProvider from './FormProvider.vue'
-  import { emailSchema, messageSchema } from '@/schemas'
+import { ref } from 'vue'
+import AccessibleInput from './AccessibleInput.vue'
+import AccessibleTextarea from './AccessibleTextarea.vue'
+import FormProvider from './FormProvider.vue'
+import { emailSchema, messageSchema } from '@/schemas'
 
-  const email = ref('')
-  const message = ref('')
-  const feedback = ref('')
+const email = ref('')
+const message = ref('')
+const feedback = ref('')
 
-  function handleSubmit() {
-    feedback.value = `Abgeschickt mit:
+function handleSubmit() {
+  feedback.value = `Abgeschickt mit:
     E-Mail: ${email.value}
     Nachricht: ${message.value}`
-  }
+}
 </script>
 
 <style scoped>
-  .feedback {
-    margin-top: 1rem;
-    color: green;
-    white-space: pre-line;
-  }
+.feedback {
+  margin-top: 1rem;
+  color: green;
+  white-space: pre-line;
+}
 </style>
