@@ -7,14 +7,19 @@
 </template>
 
 <script setup lang="ts">
-  import { watch } from 'vue'
+  import { watch, onMounted, onUnmounted, inject } from 'vue'
   import { useA11yInput } from '@/composables/useA11yInput'
   import type { AnySchema } from 'valibot'
+
+  interface FormContext {
+    registerField: (name: string, validateFn: () => Promise<boolean>) => void
+    unregisterField: (name: string) => void
+  }
 
   const props = defineProps<{
     modelValue: string
     label: string
-    name?: string
+    name: string
     required?: boolean
     disabled?: boolean
     placeholder?: string
@@ -46,6 +51,20 @@
     emit('update:modelValue', newValue)
   })
 
+  const formContext = inject<FormContext | null>('formContext', null)
+
+  onMounted(() => {
+    if (formContext) {
+      formContext.registerField(props.name, validate)
+    }
+  })
+
+  onUnmounted(() => {
+    if (formContext) {
+      formContext.unregisterField(props.name)
+    }
+  })
+
   defineExpose({ validate })
 </script>
 
@@ -56,11 +75,9 @@
     gap: 0.25rem;
     margin-bottom: 1rem;
   }
-
   textarea[aria-invalid='true'] {
     border: 2px solid red;
   }
-
   p[role='alert'] {
     color: red;
     font-size: 0.85rem;

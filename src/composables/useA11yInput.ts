@@ -1,4 +1,12 @@
-import { ref, computed, watch } from 'vue'
+import {
+  ref,
+  computed,
+  watch,
+  nextTick,
+  type InputHTMLAttributes,
+  type HTMLAttributes,
+  type ComputedRef,
+} from 'vue'
 import { safeParse, type AnySchema } from 'valibot'
 
 export interface UseA11yInputOptions {
@@ -18,18 +26,18 @@ export function useA11yInput(options: UseA11yInputOptions) {
     label,
     required = false,
     disabled = false,
-    id = `a11y-input-${Math.random().toString(36).slice(2)}`,
+    id = `a11y-${Math.random().toString(36).slice(2)}`,
     name,
     placeholder,
     schema,
   } = options
 
   const value = ref(modelValue ?? '')
-  const isTouched = ref(false)
   const error = ref<string | null>(null)
+  const isTouched = ref(false)
 
-  const validate = (): boolean => {
-    isTouched.value = true // wichtig!
+  const validate = async (): Promise<boolean> => {
+    isTouched.value = true
 
     if (required && value.value.trim() === '') {
       error.value = `${label} ist erforderlich.`
@@ -38,21 +46,20 @@ export function useA11yInput(options: UseA11yInputOptions) {
 
     if (schema) {
       const result = safeParse(schema, value.value)
-      if (!result.success && result.issues?.length > 0) {
-        const firstIssue = result.issues[0] as { message?: string }
-        error.value = firstIssue.message ?? 'Ungültige Eingabe'
+      if (!result.success) {
+        const firstIssue = result.issues?.[0] as { message?: string }
+        error.value = firstIssue?.message ?? 'Ungültige Eingabe'
         return false
       }
     }
 
     error.value = null
+    await nextTick()
     return true
   }
 
   watch(value, () => {
-    if (isTouched.value) {
-      validate()
-    }
+    if (isTouched.value) validate()
   })
 
   const onBlur = () => {
@@ -61,7 +68,7 @@ export function useA11yInput(options: UseA11yInputOptions) {
   }
 
   const inputId = id
-  const errorId = `${inputId}-error`
+  const errorId = `${id}-error`
 
   const inputProps = computed(() => ({
     id: inputId,
@@ -69,33 +76,33 @@ export function useA11yInput(options: UseA11yInputOptions) {
     disabled,
     required,
     placeholder,
-    'aria-invalid': !!error.value || undefined,
+    'aria-invalid': error.value ? 'true' : undefined,
     'aria-describedby': error.value ? errorId : undefined,
     value: value.value,
     onInput: (e: Event) => {
-      const target = e.target as HTMLInputElement
+      const target = e.target as HTMLInputElement | HTMLTextAreaElement
       value.value = target.value
     },
     onBlur,
-  }))
+  })) as unknown as ComputedRef<InputHTMLAttributes>
 
   const labelProps = computed(() => ({
     for: inputId,
-  }))
+  })) as unknown as ComputedRef<HTMLAttributes>
 
   const errorMessageProps = computed(() => ({
     id: errorId,
     role: 'alert',
     'aria-live': 'polite',
-  }))
+  })) as unknown as ComputedRef<HTMLAttributes>
 
   return {
     value,
     isTouched,
     error,
+    validate,
     inputProps,
     labelProps,
     errorMessageProps,
-    validate,
   }
 }
