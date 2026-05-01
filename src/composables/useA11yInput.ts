@@ -35,6 +35,7 @@ export function useA11yInput(options: UseA11yInputOptions) {
   const value = ref(modelValue ?? '')
   const error = ref<string | null>(null)
   const isTouched = ref(false)
+  const inputEl = ref<HTMLInputElement | HTMLTextAreaElement | null>(null)
 
   const validate = async (): Promise<boolean> => {
     isTouched.value = true
@@ -58,6 +59,19 @@ export function useA11yInput(options: UseA11yInputOptions) {
     return true
   }
 
+  function reset() {
+    isTouched.value = false
+    error.value = null
+  }
+
+  function setValueFromOutside(nextValue: string) {
+    value.value = nextValue
+  }
+
+  function focus() {
+    inputEl.value?.focus()
+  }
+
   watch(value, () => {
     if (isTouched.value) validate()
   })
@@ -79,6 +93,7 @@ export function useA11yInput(options: UseA11yInputOptions) {
     'aria-invalid': error.value ? 'true' : undefined,
     'aria-describedby': error.value ? errorId : undefined,
     value: value.value,
+    ref: inputEl,
     onInput: (e: Event) => {
       const target = e.target as HTMLInputElement | HTMLTextAreaElement
       value.value = target.value
@@ -101,6 +116,9 @@ export function useA11yInput(options: UseA11yInputOptions) {
     isTouched,
     error,
     validate,
+    reset,
+    focus,
+    setValueFromOutside,
     inputProps,
     labelProps,
     errorMessageProps,

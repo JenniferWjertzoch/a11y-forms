@@ -2,24 +2,29 @@
 import { provide, nextTick } from 'vue'
 import { useForm } from '@/composables/useForm'
 
-const emit = defineEmits(['submit'])
+const emit = defineEmits(['submit', 'invalid'])
 const form = useForm()
 
 provide('formContext', {
   registerField: form.registerField,
   unregisterField: form.unregisterField,
-  errors: form.errors,
-  reset: form.reset,
 })
 
 async function handleSubmit() {
-  await nextTick() // 💥 wichtig: wartet auf onMounted() aller Inputs
-  const isValid = await form.validate()
+  await nextTick()
+  const { isValid, firstInvalidField } = await form.validateAll()
 
   if (isValid) {
     emit('submit')
-    form.reset()
+    form.resetAll()
+    return
   }
+
+  if (firstInvalidField) {
+    form.focusField(firstInvalidField)
+  }
+
+  emit('invalid', { firstInvalidField })
 }
 </script>
 
