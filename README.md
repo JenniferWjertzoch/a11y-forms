@@ -147,13 +147,13 @@ src/
 
 ---
 
-## Testing Strategy
+## Test Setup
 
-- Unit-tested using [Vitest](https://vitest.dev)
-- Mocked input events for `onInput`, `onBlur`
-- Validate ARIA attributes (`aria-invalid`, `aria-describedby`)
-- Validate async validation return values
-- Storybook stories as integration sanity tests
+This repository includes a runnable unit test setup with:
+
+- Vitest
+- Vue Test Utils
+- jsdom
 
 ---
 
