@@ -1,49 +1,58 @@
 import { ref } from 'vue'
 
 type FieldValidator = () => Promise<boolean>
+type FieldReset = () => void
+type FieldFocus = () => void
+
+interface FieldRegistration {
+  validate: FieldValidator
+  reset: FieldReset
+  focus: FieldFocus
+}
 
 export function useForm() {
-  const fields = ref<Record<string, FieldValidator>>({})
-  const errors = ref<Record<string, string | null>>({})
-  const forceShowErrors = ref(false)
+  const fields = ref<Record<string, FieldRegistration>>({})
 
-  function registerField(name: string, validateFn: FieldValidator) {
-    fields.value[name] = validateFn
+  function registerField(name: string, registration: FieldRegistration) {
+    fields.value[name] = registration
   }
 
   function unregisterField(name: string) {
     delete fields.value[name]
   }
 
-  async function validate(): Promise<boolean> {
+  async function validateAll(): Promise<{ isValid: boolean; firstInvalidField?: string }> {
+    let firstInvalidField: string | undefined
+
     const results = await Promise.all(
-      Object.entries(fields.value).map(async ([name, validateFn]) => {
-        const isValid = await validateFn()
-        errors.value[name] = isValid ? null : 'Fehler im Feld'
+      Object.entries(fields.value).map(async ([name, registration]) => {
+        const isValid = await registration.validate()
+        if (!isValid && !firstInvalidField) {
+          firstInvalidField = name
+        }
         return isValid
       })
     )
-    return results.every(Boolean)
+
+    return {
+      isValid: results.every(Boolean),
+      firstInvalidField,
+    }
   }
 
-  function reset() {
-    Object.keys(errors.value).forEach((key) => {
-      errors.value[key] = null
-    })
-    forceShowErrors.value = false
+  function resetAll() {
+    Object.values(fields.value).forEach((field) => field.reset())
   }
 
-  function triggerAllTouched() {
-    forceShowErrors.value = true
+  function focusField(name: string) {
+    fields.value[name]?.focus()
   }
 
   return {
     registerField,
     unregisterField,
-    validate,
-    reset,
-    errors,
-    forceShowErrors,
-    triggerAllTouched,
+    validateAll,
+    resetAll,
+    focusField,
   }
 }
