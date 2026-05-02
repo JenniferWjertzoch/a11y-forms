@@ -185,8 +185,8 @@ h3 {
   font-size: 0.9rem;
   font-weight: 600;
   transition:
-          background 0.15s,
-          transform 0.1s;
+    background 0.15s,
+    transform 0.1s;
 }
 .btn:active {
   transform: scale(0.97);
@@ -587,8 +587,8 @@ h3 {
   padding: 0.55rem 0.75rem;
   width: 100%;
   transition:
-          border-color 0.15s,
-          box-shadow 0.15s;
+    border-color 0.15s,
+    box-shadow 0.15s;
   resize: vertical;
 }
 
@@ -622,8 +622,8 @@ button {
   cursor: pointer;
   align-self: flex-start;
   transition:
-          background 0.15s,
-          transform 0.1s;
+    background 0.15s,
+    transform 0.1s;
 }
 button:hover {
   background: var(--c-accent-hover);

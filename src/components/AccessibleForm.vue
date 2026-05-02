@@ -1,5 +1,5 @@
 <template>
-  <FormProvider @submit="handleSubmit" novalidate>
+  <FormProvider :on-submit="handleSubmit" novalidate v-slot="{ isSubmitting, submittingLabel }">
     <AccessibleInput
       v-model="email"
       label="Email"
@@ -18,7 +18,9 @@
       :schema="messageSchema"
     />
 
-    <button type="submit">Submit</button>
+    <button type="submit" :disabled="isSubmitting">
+      {{ isSubmitting ? submittingLabel : 'Submit' }}
+    </button>
 
     <p v-if="feedback" class="feedback" role="status" aria-live="polite">
       {{ feedback }}
