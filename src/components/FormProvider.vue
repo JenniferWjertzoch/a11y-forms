@@ -2,9 +2,21 @@
 import { provide, nextTick, ref } from 'vue'
 import { useForm } from '@/composables/useForm'
 
-const emit = defineEmits(['submit', 'invalid'])
+const props = withDefaults(
+  defineProps<{
+    onSubmit?: () => void | Promise<void>
+    submittingLabel?: string
+  }>(),
+  {
+    onSubmit: undefined,
+    submittingLabel: 'Submitting…',
+  }
+)
+
+const emit = defineEmits(['invalid'])
 const form = useForm()
 const errorSummary = ref('')
+const isSubmitting = ref(false)
 
 provide('formContext', {
   registerField: form.registerField,
@@ -12,23 +24,33 @@ provide('formContext', {
 })
 
 async function handleSubmit() {
-  await nextTick()
-  const { isValid, firstInvalidField } = await form.validateAll()
-
-  if (isValid) {
-    errorSummary.value = ''
-    emit('submit')
-    form.resetAll()
+  if (isSubmitting.value) {
     return
   }
 
-  errorSummary.value = 'Please review the highlighted fields and try again.'
+  isSubmitting.value = true
 
-  if (firstInvalidField) {
-    form.focusField(firstInvalidField)
+  try {
+    await nextTick()
+    const { isValid, firstInvalidField } = await form.validateAll()
+
+    if (isValid) {
+      errorSummary.value = ''
+      await props.onSubmit?.()
+      form.resetAll()
+      return
+    }
+
+    errorSummary.value = 'Please review the highlighted fields and try again.'
+
+    if (firstInvalidField) {
+      form.focusField(firstInvalidField)
+    }
+
+    emit('invalid', { firstInvalidField })
+  } finally {
+    isSubmitting.value = false
   }
-
-  emit('invalid', { firstInvalidField })
 }
 </script>
 
@@ -37,7 +59,7 @@ async function handleSubmit() {
     <p v-if="errorSummary" role="alert" aria-live="polite" class="form-error-summary">
       {{ errorSummary }}
     </p>
-    <slot />
+    <slot :is-submitting="isSubmitting" :submitting-label="props.submittingLabel" />
   </form>
 </template>
 

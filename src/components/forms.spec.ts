@@ -14,7 +14,7 @@ const DemoForm = defineComponent({
     return { email, message, emailSchema, messageSchema }
   },
   template: `
-    <FormProvider>
+    <FormProvider v-slot="{ isSubmitting, submittingLabel }">
       <AccessibleInput
         v-model="email"
         label="Email"
@@ -29,7 +29,7 @@ const DemoForm = defineComponent({
         required
         :schema="messageSchema"
       />
-      <button type="submit">Submit</button>
+      <button type="submit" :disabled="isSubmitting">{{ isSubmitting ? submittingLabel : "Submit" }}</button>
     </FormProvider>
   `,
 })
@@ -85,8 +85,72 @@ describe('forms accessibility and validation behavior', () => {
     wrapper.unmount()
   })
 
-  it('emits submit on valid submit', async () => {
-    const wrapper = mount(DemoForm)
+  it('prevents double submit while pending and shows loading state', async () => {
+    let submitCount = 0
+
+    async function submitWithDelay() {
+      submitCount += 1
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    }
+
+    const PendingForm = defineComponent({
+      components: { FormProvider, AccessibleInput, AccessibleTextarea },
+      setup() {
+        const email = ref('ok@example.com')
+        const message = ref('This is a valid message.')
+
+        return { email, message, emailSchema, messageSchema, submitWithDelay }
+      },
+      template: `
+        <FormProvider :on-submit="submitWithDelay" v-slot="{ isSubmitting, submittingLabel }">
+          <AccessibleInput v-model="email" label="Email" name="email" required :schema="emailSchema" />
+          <AccessibleTextarea v-model="message" label="Message" name="message" required :schema="messageSchema" />
+          <button type="submit" :disabled="isSubmitting">{{ isSubmitting ? submittingLabel : 'Submit' }}</button>
+        </FormProvider>
+      `,
+    })
+
+    const wrapper = mount(PendingForm)
+
+    await wrapper.find('form').trigger('submit.prevent')
+    await wrapper.find('form').trigger('submit.prevent')
+    await nextTick()
+
+    expect(submitCount).toBe(1)
+    expect(wrapper.find('button').text()).toBe('Submitting…')
+    expect(wrapper.find('button').attributes('disabled')).toBeDefined()
+
+    await new Promise((resolve) => setTimeout(resolve, 60))
+    await flushPromises()
+
+    expect(wrapper.find('button').text()).toBe('Submit')
+  })
+
+  it('calls onSubmit on valid submit', async () => {
+    let submitCount = 0
+
+    const ValidForm = defineComponent({
+      components: { FormProvider, AccessibleInput, AccessibleTextarea },
+      setup() {
+        const email = ref('')
+        const message = ref('')
+
+        function onSubmit() {
+          submitCount += 1
+        }
+
+        return { email, message, emailSchema, messageSchema, onSubmit }
+      },
+      template: `
+        <FormProvider :on-submit="onSubmit" v-slot="{ isSubmitting, submittingLabel }">
+          <AccessibleInput v-model="email" label="Email" name="email" required :schema="emailSchema" />
+          <AccessibleTextarea v-model="message" label="Message" name="message" required :schema="messageSchema" />
+          <button type="submit" :disabled="isSubmitting">{{ isSubmitting ? submittingLabel : 'Submit' }}</button>
+        </FormProvider>
+      `,
+    })
+
+    const wrapper = mount(ValidForm)
 
     await wrapper.find('input').setValue('ok@example.com')
     await wrapper.find('textarea').setValue('This is a valid message.')
@@ -94,8 +158,6 @@ describe('forms accessibility and validation behavior', () => {
     await nextTick()
     await flushPromises()
 
-    const formProvider = wrapper.findComponent(FormProvider)
-    expect(formProvider.emitted('submit')).toBeTruthy()
-    expect(formProvider.emitted('invalid')).toBeFalsy()
+    expect(submitCount).toBe(1)
   })
 })
