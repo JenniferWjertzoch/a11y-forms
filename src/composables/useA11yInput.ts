@@ -41,7 +41,7 @@ export function useA11yInput(options: UseA11yInputOptions) {
     isTouched.value = true
 
     if (required && value.value.trim() === '') {
-      error.value = `${label} ist erforderlich.`
+      error.value = `${label} is required.`
       return false
     }
 
@@ -49,7 +49,7 @@ export function useA11yInput(options: UseA11yInputOptions) {
       const result = safeParse(schema, value.value)
       if (!result.success) {
         const firstIssue = result.issues?.[0] as { message?: string }
-        error.value = firstIssue?.message ?? 'Ungültige Eingabe'
+        error.value = firstIssue?.message ?? 'Invalid input'
         return false
       }
     }

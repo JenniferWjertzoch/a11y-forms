@@ -22,7 +22,7 @@ async function handleSubmit() {
     return
   }
 
-  errorSummary.value = 'Bitte überprüfe die markierten Felder und versuche es erneut.'
+  errorSummary.value = 'Please review the highlighted fields and try again.'
 
   if (firstInvalidField) {
     form.focusField(firstInvalidField)

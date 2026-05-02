@@ -2,23 +2,23 @@
   <FormProvider @submit="handleSubmit" novalidate>
     <AccessibleInput
       v-model="email"
-      label="E-Mail"
+      label="Email"
       name="email"
       required
-      placeholder="z. B. du@beispiel.de"
+      placeholder="e.g. you@example.com"
       :schema="emailSchema"
     />
 
     <AccessibleTextarea
       v-model="message"
-      label="Nachricht"
+      label="Message"
       name="message"
       required
-      placeholder="Deine Nachricht"
+      placeholder="Your Message"
       :schema="messageSchema"
     />
 
-    <button type="submit">Absenden</button>
+    <button type="submit">Submit</button>
 
     <p v-if="feedback" class="feedback" role="status" aria-live="polite">
       {{ feedback }}
@@ -38,9 +38,9 @@ const message = ref('')
 const feedback = ref('')
 
 function handleSubmit() {
-  feedback.value = `Abgeschickt mit:
-    E-Mail: ${email.value}
-    Nachricht: ${message.value}`
+  feedback.value = `Submitted with:
+    Email: ${email.value}
+    Message: ${message.value}`
 }
 </script>
 
