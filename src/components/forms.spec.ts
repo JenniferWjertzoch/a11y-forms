@@ -17,19 +17,19 @@ const DemoForm = defineComponent({
     <FormProvider>
       <AccessibleInput
         v-model="email"
-        label="E-Mail"
+        label="Email"
         name="email"
         required
         :schema="emailSchema"
       />
       <AccessibleTextarea
         v-model="message"
-        label="Nachricht"
+        label="Message"
         name="message"
         required
         :schema="messageSchema"
       />
-      <button type="submit">Absenden</button>
+      <button type="submit">Submit</button>
     </FormProvider>
   `,
 })
@@ -41,13 +41,13 @@ describe('forms accessibility and validation behavior', () => {
     await wrapper.find('form').trigger('submit.prevent')
     await nextTick()
     await flushPromises()
-    expect(wrapper.text()).toContain('E-Mail ist erforderlich')
+    expect(wrapper.text()).toContain('Email is required')
 
     await wrapper.find('input').setValue('invalid-mail')
     await wrapper.find('input').trigger('blur')
     await nextTick()
     await flushPromises()
-    expect(wrapper.text()).toContain('Bitte gib eine gültige E-Mail-Adresse ein')
+    expect(wrapper.text()).toContain('Please enter a valid email address')
   })
 
   it('sets aria-invalid and aria-describedby for invalid fields', async () => {
@@ -89,7 +89,7 @@ describe('forms accessibility and validation behavior', () => {
     const wrapper = mount(DemoForm)
 
     await wrapper.find('input').setValue('ok@example.com')
-    await wrapper.find('textarea').setValue('Das ist eine valide Nachricht.')
+    await wrapper.find('textarea').setValue('This is a valid message.')
     await wrapper.find('form').trigger('submit.prevent')
     await nextTick()
     await flushPromises()

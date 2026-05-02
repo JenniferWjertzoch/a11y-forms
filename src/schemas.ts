@@ -2,11 +2,11 @@ import { string, email, minLength, pipe } from 'valibot'
 
 export const emailSchema = pipe(
   string(),
-  minLength(1, 'Die E-Mail ist erforderlich'),
-  email('Bitte gib eine gültige E-Mail-Adresse ein')
+  minLength(1, 'Email is required'),
+  email('Please enter a valid email address')
 )
 
 export const messageSchema = pipe(
   string(),
-  minLength(10, 'Die Nachricht muss aus mindestens 10 Zeichen bestehen')
+  minLength(10, 'Message must be at least 10 characters long')
 )
